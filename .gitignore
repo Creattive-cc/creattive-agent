@@ -1,0 +1,29 @@
+# Environment
+.env
+.env.*
+!.env.example
+service_account.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+dist/
+build/
+*.egg-info/
+
+# Data (gerado localmente)
+data/chroma/
+data/pdfs/
+
+# uv
+.python-version
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store

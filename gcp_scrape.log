@@ -1,0 +1,6 @@
+1. Fetching URL: https://cloud.google.com/products?hl=pt-br
+2. Parsing HTML content...
+3. Searching for product data in 'AF_initDataCallback'...
+Found AF_initDataCallback script.
+Error processing AF_initDataCallback data: list index out of range
+Failed to extract product data from the page. Exiting.

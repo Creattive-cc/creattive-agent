@@ -1,0 +1,7 @@
+.git
+.venv
+__pycache__
+data/chroma/
+*.pyc
+.env
+service_account.json

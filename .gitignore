@@ -27,3 +27,6 @@ data/pdfs/
 
 # OS
 .DS_Store
+gcp_products.html
+gcp_scrape.log
+main.py

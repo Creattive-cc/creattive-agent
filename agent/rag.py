@@ -2,9 +2,12 @@
 import os
 import glob
 import pathlib
+import time
+from functools import lru_cache
 from typing import List
 
 from google import genai as genai_new
+from google.genai import errors as genai_errors
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pypdf import PdfReader
 import chromadb
@@ -15,18 +18,32 @@ _GCS_BUCKET = os.environ.get("GCS_BUCKET", "")
 _GCS_PREFIX = "chroma/"
 
 
+def _embed_with_retry(client, model: str, contents: str, max_retries: int = 5) -> list:
+    delay = 2.0
+    for attempt in range(max_retries):
+        try:
+            return client.models.embed_content(model=model, contents=contents).embeddings[0].values
+        except genai_errors.ClientError as e:
+            if e.status_code == 429 and attempt < max_retries - 1:
+                print(f"[RAG] 429 rate limit, retry {attempt + 1}/{max_retries} in {delay:.1f}s")
+                time.sleep(delay)
+                delay = min(delay * 2, 60.0)
+            else:
+                raise
+
+
 class CustomGoogleGenAIEmbeddingFunction(EmbeddingFunction):
     def __init__(self, api_key: str, model: str = "gemini-embedding-001"):
         self._client = genai_new.Client(api_key=api_key)
         self._model = model
 
     def __call__(self, input: Documents) -> Embeddings:
-        return [
-            self._client.models.embed_content(
-                model=self._model, contents=doc
-            ).embeddings[0].values
-            for doc in input
-        ]
+        results = []
+        for i, doc in enumerate(input):
+            if i > 0:
+                time.sleep(0.5)
+            results.append(_embed_with_retry(self._client, self._model, doc))
+        return results
 
 
 class RAGRetriever:
@@ -122,11 +139,12 @@ class RAGRetriever:
         if _IS_PROD and _GCS_BUCKET:
             self._upload_to_gcs()
 
-    def search(self, query: str, k: int = 5) -> List[str]:
-        query_embedding = self._client.models.embed_content(
-            model="gemini-embedding-001", contents=query
-        ).embeddings[0].values
+    @lru_cache(maxsize=128)
+    def _cached_query_embedding(self, query: str) -> tuple:
+        return tuple(_embed_with_retry(self._client, "gemini-embedding-001", query))
 
+    def search(self, query: str, k: int = 5) -> List[str]:
+        query_embedding = list(self._cached_query_embedding(query))
         results = self.collection.query(
             query_embeddings=[query_embedding],
             n_results=k,

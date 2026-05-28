@@ -136,7 +136,7 @@ class RAGRetriever:
 
     def index_all_knowledge(self):
         print("Starting to index all markdown files in 'knowledge/' directory...")
-        md_files = glob.glob("knowledge/**/*.md", recursive=True)
+        md_files = glob.glob("knowledge/*.md")
         for md_file in md_files:
             source_id = os.path.basename(md_file)
             self.index_markdown(md_file, source_id)

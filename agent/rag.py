@@ -16,6 +16,8 @@ from chromadb.api.types import Documents, EmbeddingFunction, Embeddings
 _IS_PROD = os.environ.get("ENV", "dev") == "prod"
 _GCS_BUCKET = os.environ.get("GCS_BUCKET", "")
 _GCS_PREFIX = "chroma/"
+_GCP_PROJECT = os.environ.get("GOOGLE_CLOUD_PROJECT", "creattive-licitacoes-dev")
+_GCP_LOCATION = os.environ.get("GOOGLE_CLOUD_LOCATION", "us-central1")
 
 
 def _embed_with_retry(client, model: str, contents: str, max_retries: int = 5) -> list:
@@ -33,8 +35,8 @@ def _embed_with_retry(client, model: str, contents: str, max_retries: int = 5) -
 
 
 class CustomGoogleGenAIEmbeddingFunction(EmbeddingFunction):
-    def __init__(self, api_key: str, model: str = "gemini-embedding-001"):
-        self._client = genai_new.Client(api_key=api_key)
+    def __init__(self, model: str = "gemini-embedding-001"):
+        self._client = genai_new.Client(vertexai=True, project=_GCP_PROJECT, location=_GCP_LOCATION)
         self._model = model
 
     def __call__(self, input: Documents) -> Embeddings:
@@ -48,9 +50,8 @@ class CustomGoogleGenAIEmbeddingFunction(EmbeddingFunction):
 
 class RAGRetriever:
     def __init__(self, persist_directory: str = "/tmp/chroma"):
-        api_key = os.environ["GEMINI_API_KEY"]
-        self._client = genai_new.Client(api_key=api_key)
-        self.embedding_function = CustomGoogleGenAIEmbeddingFunction(api_key=api_key)
+        self._client = genai_new.Client(vertexai=True, project=_GCP_PROJECT, location=_GCP_LOCATION)
+        self.embedding_function = CustomGoogleGenAIEmbeddingFunction()
         self._persist_directory = persist_directory
 
         if _IS_PROD and _GCS_BUCKET:

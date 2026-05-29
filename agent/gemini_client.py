@@ -9,14 +9,17 @@ from typing import List
 from google import genai
 from google.genai import types
 
-# This model name is compatible with the google.genai library
 _MODEL_NAME = "gemini-2.5-flash"
+_GCP_PROJECT = os.environ.get("GOOGLE_CLOUD_PROJECT", "creattive-licitacoes-dev")
+_GCP_LOCATION = os.environ.get("GOOGLE_CLOUD_LOCATION", "us-central1")
 
 
 class GeminiClient:
     def __init__(self):
         self._client = genai.Client(
-            api_key=os.environ["GEMINI_API_KEY"],
+            vertexai=True,
+            project=_GCP_PROJECT,
+            location=_GCP_LOCATION,
         )
 
     def chat(

@@ -96,7 +96,7 @@ if prompt := st.chat_input("Digite sua mensagem…"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("Bia está pensando…"):
+        with st.spinner("LucIA está pensando…"):
             response = agent.responder(prompt, st.session_state.session_id)
         st.markdown(response)
 

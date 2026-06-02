@@ -22,16 +22,46 @@ Histórico:
 {history}
 """
 
-def extract_lead(history: list, gemini_client) -> Optional[dict]:
-    if not history:
-        return None
+_SUMMARY_PROMPT = """Analise a conversa abaixo entre um cliente e LucIA (consultora comercial da Creattive).
 
-    history_text = "\n".join(
+Gere um resumo executivo em exatamente 3 tópicos, em português:
+
+• Perfil: quem é o cliente e contexto da empresa
+• Necessidade: o que precisa / problema que quer resolver
+• Negociação: estágio atual e próximo passo combinado
+
+Seja direto. Máximo 2 linhas por tópico.
+
+Conversa:
+{history}
+"""
+
+def _history_to_text(history: list) -> str:
+    return "\n".join(
         f"{'Cliente' if m['role'] == 'user' else 'LucIA'}: {m['parts'][0]}"
         for m in history
     )
 
-    prompt = _EXTRACTION_PROMPT.format(history=history_text)
+
+def generate_summary(history: list, gemini_client) -> str:
+    if not history:
+        return ""
+    try:
+        return gemini_client.chat(
+            system_prompt="Você resume conversas de vendas de forma executiva e objetiva.",
+            history=[],
+            user_message=_SUMMARY_PROMPT.format(history=_history_to_text(history)),
+        ).strip()
+    except Exception as e:
+        print(f"[lead_extractor] erro ao gerar resumo: {e}")
+        return ""
+
+
+def extract_lead(history: list, gemini_client) -> Optional[dict]:
+    if not history:
+        return None
+
+    prompt = _EXTRACTION_PROMPT.format(history=_history_to_text(history))
 
     try:
         raw = gemini_client.chat(

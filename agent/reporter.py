@@ -29,6 +29,7 @@ def build_report() -> dict:
     convs_hoje = [
         d for d in db.collection("conversations").stream()
         if _is_today(d.to_dict().get("updated_at"))
+        and len(d.to_dict().get("messages", [])) >= 2
     ]
 
     leads_docs = [
@@ -141,7 +142,8 @@ def send_daily_report() -> dict:
     report = build_report()
     html   = _render_html(report)
 
-    to      = os.environ.get("REPORT_TO", "felipe.malveira@creattive.cc")
+    to_raw  = os.environ.get("REPORT_TO", "felipe.malveira@creattive.cc")
+    to      = [e.strip() for e in to_raw.split(",") if e.strip()]
     from_   = os.environ.get("REPORT_FROM", "onboarding@resend.dev")
     subject = (
         f"LucIA · {report['date']} — "

@@ -37,7 +37,7 @@ def extract_lead(history: list, gemini_client) -> Optional[dict]:
         raw = gemini_client.chat(
             system_prompt="Você é um extrator de dados. Retorne apenas JSON válido ou o literal null.",
             history=[],
-            message=prompt,
+            user_message=prompt,
         ).strip()
 
         if not raw or raw.lower() == "null":

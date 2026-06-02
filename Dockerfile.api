@@ -1,0 +1,15 @@
+FROM python:3.13-slim
+
+RUN pip install uv
+
+WORKDIR /app
+
+COPY pyproject.toml uv.lock ./
+ENV UV_PYTHON=python3.13
+RUN uv sync --frozen --no-dev --python 3.13
+
+COPY . .
+
+EXPOSE 8080
+
+CMD [".venv/bin/uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8080"]

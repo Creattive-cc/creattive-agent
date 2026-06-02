@@ -153,7 +153,7 @@ def send_daily_report() -> dict:
 
     resp = resend.Emails.send({
         "from": from_,
-        "to":   [to],
+        "to":   to,
         "subject": subject,
         "html": html,
     })

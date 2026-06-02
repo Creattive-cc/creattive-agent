@@ -1,5 +1,7 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Optional
+
+BRT = timezone(timedelta(hours=-3))
 
 _db = None
 
@@ -16,7 +18,7 @@ def save_conversation(session_id: str, messages: list) -> None:
     try:
         _get_db().collection("conversations").document(session_id).set({
             "messages": messages,
-            "updated_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(BRT),
         })
     except Exception as e:
         print(f"[db] erro ao salvar conversa: {e}")
@@ -27,7 +29,7 @@ def save_lead(session_id: str, lead: dict) -> None:
         _get_db().collection("leads").document(session_id).set({
             **lead,
             "session_id": session_id,
-            "captured_at": datetime.now(timezone.utc),
+            "captured_at": datetime.now(BRT),
             "status": "novo",
         })
     except Exception as e:

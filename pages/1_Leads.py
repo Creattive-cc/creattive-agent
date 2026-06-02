@@ -1,5 +1,5 @@
 import os
-from datetime import timezone
+from datetime import timezone, timedelta
 
 from dotenv import load_dotenv
 load_dotenv(dotenv_path=".env")
@@ -8,6 +8,8 @@ import streamlit as st
 from google.cloud import firestore
 
 st.set_page_config(page_title="Leads · Creattive", page_icon="👥", layout="wide")
+
+BRT = timezone(timedelta(hours=-3))
 
 _STATUS_COLORS = {
     "novo":             "🔵",
@@ -42,7 +44,7 @@ def _fmt_date(ts) -> str:
     if ts is None:
         return "—"
     try:
-        local = ts.astimezone(tz=None)
+        local = ts.astimezone(BRT)
         return local.strftime("%d/%m/%Y %H:%M")
     except Exception:
         return str(ts)

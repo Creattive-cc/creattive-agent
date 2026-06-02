@@ -1,8 +1,3 @@
-"""
-agent/memory.py — Gerenciamento de memória conversacional.
-Responsabilidade: manter histórico de mensagens por session_id, com janela de contexto configurável.
-"""
-
 from typing import List, Dict
 from collections import defaultdict
 
@@ -17,8 +12,10 @@ class ConversationMemory:
         history = self._store[session_id]
         history.append({"role": role, "parts": [text]})
         if len(history) > _MAX_MESSAGES:
-            # descarta as mensagens mais antigas, mantendo as _MAX_MESSAGES mais recentes
             self._store[session_id] = history[-_MAX_MESSAGES:]
+
+    def seed(self, session_id: str, messages: list) -> None:
+        self._store[session_id] = list(messages[-_MAX_MESSAGES:])
 
     def get_history(self, session_id: str) -> List[dict]:
         return list(self._store[session_id])

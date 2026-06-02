@@ -1,7 +1,3 @@
-"""
-agent/db.py — Persistência de conversas e leads no Cloud Firestore.
-"""
-
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -38,8 +34,16 @@ def save_lead(session_id: str, lead: dict) -> None:
         print(f"[db] erro ao salvar lead: {e}")
 
 
+def load_conversation(session_id: str) -> list:
+    try:
+        doc = _get_db().collection("conversations").document(session_id).get()
+        return doc.to_dict().get("messages", []) if doc.exists else []
+    except Exception as e:
+        print(f"[db] erro ao carregar conversa: {e}")
+        return []
+
+
 def update_lead(session_id: str, lead: dict) -> None:
-    """Atualiza campos do lead preservando captured_at e status existentes."""
     try:
         _get_db().collection("leads").document(session_id).update(lead)
     except Exception as e:

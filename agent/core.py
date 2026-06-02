@@ -1,7 +1,6 @@
-
 from typing import Optional
 
-from agent.db import save_conversation, save_lead, update_lead
+from agent.db import load_conversation, save_conversation, save_lead, update_lead
 from agent.gemini_client import GeminiClient
 from agent.lead_extractor import extract_lead, generate_summary
 from agent.memory import ConversationMemory
@@ -19,6 +18,11 @@ class CreattiveAgent:
         print("CreattiveAgent initialized successfully.")
 
     def responder(self, message: str, session_id: str) -> str:
+        if not self.memory.get_history(session_id):
+            saved = load_conversation(session_id)
+            if saved:
+                self.memory.seed(session_id, saved)
+
         relevant_chunks = self.rag_retriever.search(query=message, k=5)
         system_prompt = build_system_prompt(relevant_chunks)
         history = self.memory.get_history(session_id)
@@ -37,8 +41,7 @@ class CreattiveAgent:
     def _lead_is_complete(self, lead: dict) -> bool:
         return all(lead.get(f) for f in self._COMPLETE_FIELDS)
 
-    def try_capture_lead(self, session_id: str) -> Optional[dict]:
-        """Extrai e persiste dados de lead a cada turno até ter todos os campos."""
+    def try_capture_lead(self, session_id: str, phone_hint: Optional[str] = None) -> Optional[dict]:
         if self._leads_captured.get(session_id) is True:
             return None
 
@@ -49,6 +52,9 @@ class CreattiveAgent:
         lead = extract_lead(history, self.gemini_client)
         if not lead:
             return None
+
+        if phone_hint and not lead.get("telefone"):
+            lead["telefone"] = phone_hint
 
         lead["resumo"] = generate_summary(history, self.gemini_client)
 

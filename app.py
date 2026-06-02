@@ -153,8 +153,12 @@ if prompt := st.chat_input("Digite sua mensagem…"):
 
     st.session_state.messages.append({"role": "assistant", "content": response})
 
-    if not st.session_state.lead_captured:
+    _COMPLETE = ("nome", "empresa", "cpf_cnpj", "email", "telefone")
+    lead_atual = st.session_state.lead_captured
+    ja_completo = lead_atual and all(lead_atual.get(f) for f in _COMPLETE)
+
+    if not ja_completo:
         lead = agent.try_capture_lead(st.session_state.session_id)
-        if lead:
+        if lead and lead != lead_atual:
             st.session_state.lead_captured = lead
             st.rerun()

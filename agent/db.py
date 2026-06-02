@@ -38,6 +38,14 @@ def save_lead(session_id: str, lead: dict) -> None:
         print(f"[db] erro ao salvar lead: {e}")
 
 
+def update_lead(session_id: str, lead: dict) -> None:
+    """Atualiza campos do lead preservando captured_at e status existentes."""
+    try:
+        _get_db().collection("leads").document(session_id).update(lead)
+    except Exception as e:
+        print(f"[db] erro ao atualizar lead: {e}")
+
+
 def get_lead(session_id: str) -> Optional[dict]:
     try:
         doc = _get_db().collection("leads").document(session_id).get()

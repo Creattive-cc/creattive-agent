@@ -1,15 +1,28 @@
 import os
+import pathlib
 from contextlib import asynccontextmanager
 
-import httpx
 from dotenv import load_dotenv
+
+load_dotenv()
+
+_sa_path = pathlib.Path(__file__).parent / "service_account.json"
+
+if os.getenv("K_SERVICE"):
+    print("[AUTH] modo Cloud Run via ADC")
+else:
+    if _sa_path.exists():
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(_sa_path)
+        print(f"[AUTH] modo local via JSON ({_sa_path})")
+    else:
+        print("[AUTH] modo local — service_account.json não encontrado, tentando ADC")
+
+import httpx
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from agent.core import CreattiveAgent
-
-load_dotenv()
 
 EVOLUTION_API_URL = os.getenv("EVOLUTION_API_URL", "")
 EVOLUTION_API_KEY = os.getenv("EVOLUTION_API_KEY", "")

@@ -72,3 +72,10 @@ class CreattiveAgent:
         self._leads_captured.pop(session_id, None)
         print(f"Memory for session '{session_id}' has been cleared.")
 
+    def reindex_knowledge(self) -> dict:
+        self.rag_retriever.clear()
+        self.rag_retriever.index_all_knowledge()
+        sources = self.rag_retriever.get_indexed_sources()
+        total = self.rag_retriever.count()
+        return {"total_chunks": total, "sources": sources}
+

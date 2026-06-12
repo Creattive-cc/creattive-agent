@@ -57,6 +57,13 @@ async def health():
     return {"status": "ok"}
 
 
+@app.post("/admin/reindex")
+async def reindex():
+    agent = _agent_instance()
+    result = agent.reindex_knowledge()
+    return {"status": "reindexed", **result}
+
+
 @app.post("/chat")
 async def chat(req: ChatRequest):
     agent = _agent_instance()

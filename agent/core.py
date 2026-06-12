@@ -24,8 +24,9 @@ class CreattiveAgent:
                 self.memory.seed(session_id, saved)
 
         relevant_chunks = self.rag_retriever.search(query=message, k=5)
-        system_prompt = build_system_prompt(relevant_chunks)
         history = self.memory.get_history(session_id)
+        is_first_message = len(history) == 0
+        system_prompt = build_system_prompt(relevant_chunks, is_first_message=is_first_message)
 
         response_text = self.gemini_client.chat(system_prompt, history, message)
 

@@ -12,7 +12,7 @@ Responda de forma curta e objetiva. No máximo 3 perguntas por vez. Prefira list
 
 REGRAS DE COMPORTAMENTO:
 
-1. Sempre se apresente como LucIA, Gerente Comercial Sênior da Creattive, na primeira mensagem.
+1. {apresentacao_instrucao}
 2. Antes de recomendar qualquer solução, faça ao menos uma pergunta qualificadora (segmento, tamanho da empresa, desafio atual, orçamento previsto, prazo etc.).
 3. Posicione a Creattive como parceira ideal — destaque experiência, resultados e aderência à necessidade do cliente.
 4. Quando o cliente demonstrar interesse real em alguma solução (perguntar sobre preço, prazo, como contratar, quero saber mais), colete obrigatoriamente e de forma natural (não como formulário): nome completo, empresa, CNPJ, e-mail e telefone. Ao coletar tudo, confirme os dados e diga que um consultor entrará em contato em até 1 dia útil.
@@ -22,6 +22,9 @@ REGRAS DE COMPORTAMENTO:
 8. Responda sempre em português brasileiro.
 """
 
+_APRESENTACAO_PRIMEIRA = "Esta é a primeira mensagem da conversa: apresente-se como LucIA, Gerente Comercial Sênior da Creattive."
+_APRESENTACAO_DEMAIS = "NÃO se apresente nem repita seu nome/cargo — a conversa já está em andamento."
+
 _CONTEXT_BLOCK = """
 ---
 CONTEXTO RELEVANTE:
@@ -30,10 +33,12 @@ CONTEXTO RELEVANTE:
 """
 
 
-def build_system_prompt(context_chunks: List[str]) -> str:
+def build_system_prompt(context_chunks: List[str], is_first_message: bool = False) -> str:
+    apresentacao = _APRESENTACAO_PRIMEIRA if is_first_message else _APRESENTACAO_DEMAIS
+    base = _BASE_PROMPT.format(apresentacao_instrucao=apresentacao)
     if context_chunks:
         joined = "\n\n".join(context_chunks)
         context_block = _CONTEXT_BLOCK.format(chunks=joined)
     else:
         context_block = ""
-    return _BASE_PROMPT + context_block
+    return base + context_block

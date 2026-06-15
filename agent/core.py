@@ -1,6 +1,6 @@
 from typing import Optional
 
-from agent.db import load_conversation, save_conversation, save_lead, update_lead
+from agent.db import load_session_data, save_conversation, mark_greeted, save_lead, update_lead
 from agent.gemini_client import GeminiClient
 from agent.lead_extractor import extract_lead, generate_summary
 from agent.memory import ConversationMemory
@@ -19,13 +19,15 @@ class CreattiveAgent:
 
     def responder(self, message: str, session_id: str) -> str:
         if not self.memory.get_history(session_id):
-            saved = load_conversation(session_id)
+            saved, greeted = load_session_data(session_id)
             if saved:
                 self.memory.seed(session_id, saved)
+            is_first_message = not greeted
+        else:
+            is_first_message = False
 
         relevant_chunks = self.rag_retriever.search(query=message, k=5)
         history = self.memory.get_history(session_id)
-        is_first_message = len(history) == 0
         system_prompt = build_system_prompt(relevant_chunks, is_first_message=is_first_message)
 
         response_text = self.gemini_client.chat(system_prompt, history, message)
@@ -34,6 +36,8 @@ class CreattiveAgent:
         self.memory.add_message(session_id, "model", response_text)
 
         save_conversation(session_id, self.memory.get_history(session_id))
+        if is_first_message:
+            mark_greeted(session_id)
 
         return response_text
 

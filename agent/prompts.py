@@ -23,7 +23,7 @@ REGRAS DE COMPORTAMENTO:
 """
 
 _APRESENTACAO_PRIMEIRA = "Esta é a primeira mensagem da conversa: apresente-se como LucIA, Gerente Comercial Sênior da Creattive."
-_APRESENTACAO_DEMAIS = "NÃO se apresente nem repita seu nome/cargo — a conversa já está em andamento."
+_APRESENTACAO_DEMAIS = "PROIBIDO se apresentar. Esta NÃO é a primeira mensagem — a conversa já está em andamento. Responda diretamente o conteúdo, sem dizer seu nome, cargo ou qualquer forma de saudação inicial."
 
 _CONTEXT_BLOCK = """
 ---

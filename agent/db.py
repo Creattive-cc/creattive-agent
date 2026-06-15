@@ -46,13 +46,15 @@ def load_conversation(session_id: str) -> list:
 
 
 def load_session_data(session_id: str) -> tuple[list, bool]:
-    """Returns (messages, has_greeted). Single Firestore read."""
+    """Returns (messages, greeted_today). Single Firestore read."""
     try:
         doc = _get_db().collection("conversations").document(session_id).get()
         if not doc.exists:
             return [], False
         data = doc.to_dict() or {}
-        return data.get("messages", []), bool(data.get("has_greeted", False))
+        today = datetime.now(BRT).strftime("%Y-%m-%d")
+        greeted_today = data.get("greeted_date") == today
+        return data.get("messages", []), greeted_today
     except Exception as e:
         print(f"[db] erro ao carregar sessão: {e}")
         return [], False
@@ -60,8 +62,9 @@ def load_session_data(session_id: str) -> tuple[list, bool]:
 
 def mark_greeted(session_id: str) -> None:
     try:
+        today = datetime.now(BRT).strftime("%Y-%m-%d")
         _get_db().collection("conversations").document(session_id).set(
-            {"has_greeted": True}, merge=True
+            {"greeted_date": today}, merge=True
         )
     except Exception as e:
         print(f"[db] erro ao marcar saudação: {e}")

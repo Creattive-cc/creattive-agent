@@ -56,7 +56,9 @@ cp .env.example .env
 | `EVOLUTION_API_URL` | URL da instância Evolution API | Não |
 | `EVOLUTION_API_KEY` | Chave de autenticação da Evolution API | Não |
 | `EVOLUTION_INSTANCE` | Nome da instância Evolution (padrão: `creattive`) | Não |
-| `REPORT_TO` | E-mail destinatário do resumo diário | Não |
+| `RESEND_API_KEY` | Chave da API Resend para envio de e-mail | Sim (relatório) |
+| `REPORT_FROM` | Remetente do resumo diário (ex: `LucIA <lucia@creattive.cc>`) | Sim (relatório) |
+| `REPORT_TO` | Destinatários do resumo diário, separados por vírgula | Sim (relatório) |
 
 ### Executar
 
@@ -115,7 +117,9 @@ gcloud run jobs deploy creattive-agent-report \
   --image=gcr.io/SEU_PROJETO/creattive-agent:latest \
   --region=us-central1 \
   --command=uv,run,python,report_job.py \
-  --set-env-vars=GOOGLE_CLOUD_PROJECT=SEU_PROJETO,REPORT_TO=destinatario@empresa.com
+  --update-env-vars="^|^REPORT_FROM=LucIA <lucia@creattive.cc>" \
+  --update-env-vars="^|^REPORT_TO=destinatario@empresa.com,outro@empresa.com" \
+  --set-secrets=RESEND_API_KEY=RESEND_API_KEY:latest
 ```
 
 ## Endpoints da API

@@ -40,12 +40,13 @@ def _update_status(doc_id: str, status: str):
     _get_db().collection("leads").document(doc_id).update({"status": status})
 
 
-def _fmt_date(ts) -> str:
+def _fmt_date(ts, brt_str: str | None = None) -> str:
+    if brt_str:
+        return brt_str
     if ts is None:
         return "—"
     try:
-        local = ts.astimezone(BRT)
-        return local.strftime("%d/%m/%Y %H:%M")
+        return ts.astimezone(BRT).strftime("%d/%m/%Y %H:%M")
     except Exception:
         return str(ts)
 
@@ -79,7 +80,7 @@ for lead in leads:
     origem  = lead.get("origem") or "automático"
     status  = lead.get("status") or "novo"
     resumo  = lead.get("resumo") or ""
-    data    = _fmt_date(lead.get("captured_at"))
+    data    = _fmt_date(lead.get("captured_at"), lead.get("captured_at_brt"))
     icone   = _STATUS_COLORS.get(status, "⚪")
 
     header = f"{icone} **{nome}**"

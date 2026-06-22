@@ -26,10 +26,12 @@ def save_conversation(session_id: str, messages: list) -> None:
 
 def save_lead(session_id: str, lead: dict) -> None:
     try:
+        now_brt = datetime.now(BRT)
         _get_db().collection("leads").document(session_id).set({
             **lead,
             "session_id": session_id,
-            "captured_at": datetime.now(BRT),
+            "captured_at": now_brt,
+            "captured_at_brt": now_brt.strftime("%d/%m/%Y %H:%M"),
             "status": "novo",
         })
     except Exception as e:

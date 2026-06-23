@@ -14,33 +14,38 @@ def _get_db():
     return firestore.Client(project=os.environ.get("GOOGLE_CLOUD_PROJECT", "creattive-licitacoes-dev"))
 
 
-def _is_today(ts) -> bool:
+def _is_yesterday(ts) -> bool:
+    """Retorna True se o timestamp pertence ao dia anterior em BRT."""
     if ts is None:
         return False
-    today_start = datetime.now(BRT).replace(hour=0, minute=0, second=0, microsecond=0)
     if hasattr(ts, "tzinfo") and ts.tzinfo is None:
         ts = ts.replace(tzinfo=timezone.utc)
-    return ts >= today_start.astimezone(timezone.utc)
+    now_brt = datetime.now(BRT)
+    yesterday_start = now_brt.replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=1)
+    yesterday_end   = yesterday_start + timedelta(days=1)
+    ts_brt = ts.astimezone(BRT)
+    return yesterday_start <= ts_brt < yesterday_end
 
 
 def build_report() -> dict:
     db = _get_db()
+    yesterday_brt = datetime.now(BRT) - timedelta(days=1)
 
-    convs_hoje = [
+    convs_ontem = [
         d for d in db.collection("conversations").stream()
-        if _is_today(d.to_dict().get("updated_at"))
+        if _is_yesterday(d.to_dict().get("updated_at"))
         and len(d.to_dict().get("messages", [])) >= 2
     ]
 
     leads_docs = [
         d.to_dict() for d in db.collection("leads").stream()
-        if _is_today(d.to_dict().get("captured_at"))
+        if _is_yesterday(d.to_dict().get("captured_at"))
     ]
 
     return {
-        "date": datetime.now(BRT).strftime("%d/%m/%Y"),
-        "weekday": datetime.now(BRT).strftime("%A"),
-        "total_conversations": len(convs_hoje),
+        "date": yesterday_brt.strftime("%d/%m/%Y"),
+        "weekday": yesterday_brt.strftime("%A"),
+        "total_conversations": len(convs_ontem),
         "total_leads": len(leads_docs),
         "leads": leads_docs,
     }
@@ -124,7 +129,7 @@ def _render_html(r: dict) -> str:
          style="border-top:1px solid #e5e7eb;margin-top:24px;">
     <tr>
       <td style="padding-top:16px;font-size:12px;color:#9ca3af;">
-        Creattive Agent · LucIA · Resumo automático das 18h
+        Creattive Agent · LucIA · Resumo automático das 00h01
       </td>
     </tr>
   </table>
